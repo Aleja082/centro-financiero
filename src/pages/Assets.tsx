@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react'
 import { usePortfolio } from '../context/PortfolioContext'
 import type { Asset, AssetType } from '../types/portfolio'
 import { formatCOP, plPercent, formatPercent, cn } from '../utils/format'
+import { señalTacticaSalida } from '../utils/liveRecalc'
 import Card from '../components/ui/Card'
 import Tabs from '../components/ui/Tabs'
 import RecommendationBadge from '../components/ui/RecommendationBadge'
@@ -13,9 +14,15 @@ type FiltroTipo = 'todos' | AssetType
 const tipoLabel: Record<AssetType, string> = { cripto: 'Cripto', accion: 'Acción', fondo: 'Fondo' }
 
 export default function Assets() {
-  const { data } = usePortfolio()
+  const { data, staticData, livePrices } = usePortfolio()
   const [filtro, setFiltro] = useState<FiltroTipo>('todos')
   const [expandedId, setExpandedId] = useState<string | null>(null)
+
+  const coberturaMap = useMemo(
+    () => new Map(livePrices.cobertura.map((c) => [c.assetId, c])),
+    [livePrices.cobertura],
+  )
+  const staticMap = useMemo(() => new Map(staticData.assets.map((a) => [a.id, a])), [staticData.assets])
 
   const assets = useMemo(() => {
     const base = filtro === 'todos' ? data.assets : data.assets.filter((a) => a.tipo === filtro)
@@ -37,6 +44,14 @@ export default function Assets() {
         />
       </div>
 
+      {livePrices.enabled && (
+        <p className="text-xs text-ink-400 flex items-center gap-1.5">
+          <span className="h-1.5 w-1.5 rounded-full bg-signal-emerald" /> en vivo (CoinGecko)
+          <span className="mx-1">·</span>
+          <span className="h-1.5 w-1.5 rounded-full bg-ink-300 dark:bg-ink-600" /> valor guardado (sin fuente en vivo disponible)
+        </p>
+      )}
+
       <Card className="p-0 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -56,6 +71,7 @@ export default function Assets() {
               {assets.map((a) => {
                 const pl = plPercent(a.invertidoCOP, a.actualCOP)
                 const expanded = expandedId === a.id
+                const cobertura = coberturaMap.get(a.id)
                 return (
                   <React.Fragment key={a.id}>
                     <tr
@@ -67,7 +83,17 @@ export default function Assets() {
                         <div className="text-xs text-ink-400">{a.ticker} · {tipoLabel[a.tipo]}</div>
                       </td>
                       <td className="px-4 py-3 text-right tabular text-ink-600 dark:text-ink-300">{formatCOP(a.invertidoCOP)}</td>
-                      <td className="px-4 py-3 text-right tabular font-medium text-ink-800 dark:text-ink-100">{formatCOP(a.actualCOP)}</td>
+                      <td className="px-4 py-3 text-right tabular font-medium text-ink-800 dark:text-ink-100">
+                        <span className="inline-flex items-center gap-1.5">
+                          {a.tipo === 'cripto' && (
+                            <span
+                              className={cn('h-1.5 w-1.5 rounded-full', cobertura?.enVivo ? 'bg-signal-emerald' : 'bg-ink-300 dark:bg-ink-600')}
+                              title={cobertura?.enVivo ? 'Precio en vivo' : 'Valor guardado'}
+                            />
+                          )}
+                          {formatCOP(a.actualCOP)}
+                        </span>
+                      </td>
                       <td className={cn('px-4 py-3 text-right tabular font-medium', pl >= 0 ? 'text-signal-emeraldDeep dark:text-signal-emerald' : 'text-signal-coralDeep dark:text-signal-coral')}>
                         {formatPercent(pl)}
                       </td>
@@ -78,7 +104,7 @@ export default function Assets() {
                         <ChevronDownIcon className={cn('h-4 w-4 text-ink-400 transition-transform', expanded && 'rotate-180')} />
                       </td>
                     </tr>
-                    {expanded && <AssetDetailRow asset={a} />}
+                    {expanded && <AssetDetailRow asset={a} señalTactica={señalTacticaSalida(a, staticMap.get(a.id) ?? a)} />}
                   </React.Fragment>
                 )
               })}
@@ -90,10 +116,15 @@ export default function Assets() {
   )
 }
 
-function AssetDetailRow({ asset }: { asset: Asset }) {
+function AssetDetailRow({ asset, señalTactica }: { asset: Asset; señalTactica: string | null }) {
   return (
     <tr className="bg-ink-50/70 dark:bg-ink-800/40 border-b border-ink-100 dark:border-ink-800">
       <td colSpan={8} className="px-4 py-4">
+        {señalTactica && (
+          <div className="mb-3 rounded-lg bg-signal-azure/10 text-signal-azure text-sm px-3 py-2">
+            📡 <strong>Señal en vivo:</strong> {señalTactica}
+          </div>
+        )}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="lg:col-span-2">
             <p className="text-[11px] uppercase tracking-wide text-ink-400 font-medium mb-1">Tesis de inversión</p>

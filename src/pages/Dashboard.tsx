@@ -10,12 +10,13 @@ import Gauge from '../components/ui/Gauge'
 import AllocationDonut from '../components/charts/AllocationDonut'
 import ComparisonBars from '../components/charts/ComparisonBars'
 import Badge from '../components/ui/Badge'
+import LivePriceStatus from '../components/ui/LivePriceStatus'
 import { ArrowRightIcon } from '@heroicons/react/24/outline'
 
 const severidadVariant = { critico: 'coral', alto: 'amber', medio: 'azure', bajo: 'neutral' } as const
 
 export default function Dashboard() {
-  const { data } = usePortfolio()
+  const { data, livePrices } = usePortfolio()
   const { assets, perfil, meta, alertas, asignacionObjetivo } = data
   const totales = calcularTotales(assets)
   const score = healthScore(data.subScoresSalud)
@@ -37,6 +38,8 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
+      {livePrices.enabled && <LivePriceStatus live={livePrices} />}
+
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Valor actual" value={formatCOP(totales.actual)} sub={`Invertido: ${formatCOP(totales.invertido)}`} />
         <StatCard

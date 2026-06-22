@@ -3,14 +3,15 @@ import { Bars3Icon } from '@heroicons/react/24/outline'
 import { usePortfolio } from '../../context/PortfolioContext'
 import { calcularTotales } from '../../utils/portfolioMath'
 import { formatCOP, formatPercent } from '../../utils/format'
+import LivePriceStatus from '../ui/LivePriceStatus'
 
 export default function Topbar({ title, subtitle, onMenuClick }: { title: string; subtitle?: string; onMenuClick: () => void }) {
-  const { data } = usePortfolio()
+  const { data, livePrices } = usePortfolio()
   const totales = calcularTotales(data.assets)
 
   return (
     <header className="sticky top-0 z-20 bg-paper-50/90 dark:bg-ink-950/90 backdrop-blur border-b border-ink-200/70 dark:border-ink-700/70">
-      <div className="flex items-center justify-between gap-4 px-4 sm:px-6 py-4">
+      <div className="flex items-center justify-between gap-4 px-4 sm:px-6 py-3">
         <div className="flex items-center gap-3 min-w-0">
           <button onClick={onMenuClick} className="lg:hidden text-ink-500 dark:text-ink-300 shrink-0">
             <Bars3Icon className="h-6 w-6" />
@@ -27,6 +28,9 @@ export default function Topbar({ title, subtitle, onMenuClick }: { title: string
             {formatPercent(totales.plPct)}
           </p>
         </div>
+      </div>
+      <div className="px-4 sm:px-6 pb-2.5 -mt-1">
+        <LivePriceStatus live={livePrices} compact />
       </div>
     </header>
   )

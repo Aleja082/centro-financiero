@@ -4,7 +4,9 @@ import type { Asset, Recomendacion } from '../types/portfolio'
 import Card from '../components/ui/Card'
 import Badge from '../components/ui/Badge'
 import Tabs from '../components/ui/Tabs'
+import LivePriceStatus from '../components/ui/LivePriceStatus'
 import { formatCOP, formatPercent, plPercent } from '../utils/format'
+import { señalTacticaSalida } from '../utils/liveRecalc'
 
 const grupos: { value: Recomendacion; titulo: string; accent: 'emerald' | 'azure' | 'amber' | 'coral' }[] = [
   { value: 'acumular', titulo: '🟢 Acumular', accent: 'emerald' },
@@ -36,8 +38,10 @@ function impactoDe(asset: Asset): string {
 }
 
 export default function Recommendations() {
-  const { data } = usePortfolio()
+  const { data, staticData, livePrices } = usePortfolio()
   const [tab, setTab] = useState<Recomendacion>('vender')
+
+  const staticMap = useMemo(() => new Map(staticData.assets.map((a) => [a.id, a])), [staticData.assets])
 
   const porGrupo = useMemo(() => {
     const map = new Map<Recomendacion, Asset[]>()
@@ -49,6 +53,8 @@ export default function Recommendations() {
 
   return (
     <div className="space-y-6">
+      {livePrices.enabled && <LivePriceStatus live={livePrices} />}
+
       <Card title="Acciones generales prioritarias" subtitle="No ligadas a un activo específico">
         <div className="grid sm:grid-cols-2 gap-3">
           <AccionGeneral
@@ -85,6 +91,7 @@ export default function Recommendations() {
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {(porGrupo.get(tab) ?? []).map((a) => {
           const prioridad = prioridadDe(a)
+          const señal = señalTacticaSalida(a, staticMap.get(a.id) ?? a)
           return (
             <Card key={a.id} accent={grupos.find((g) => g.value === tab)?.accent} className="flex flex-col">
               <div className="flex items-start justify-between gap-2 mb-2">
@@ -95,6 +102,9 @@ export default function Recommendations() {
                 <Badge variant={prioridad.variant}>{prioridad.label}</Badge>
               </div>
               <p className="text-sm text-ink-600 dark:text-ink-300 mb-3">{a.tesis}</p>
+              {señal && (
+                <div className="mb-3 rounded-lg bg-signal-azure/10 text-signal-azure text-xs px-2.5 py-2">📡 {señal}</div>
+              )}
               <div className="mt-auto space-y-1.5 pt-2 border-t border-ink-200/60 dark:border-ink-700/60 text-xs">
                 <p className="text-ink-500 dark:text-ink-400"><strong className="text-ink-700 dark:text-ink-200">Impacto esperado:</strong> {impactoDe(a)}</p>
                 <p className="text-ink-500 dark:text-ink-400"><strong className="text-ink-700 dark:text-ink-200">Confianza:</strong> {confianzaDe(a)}</p>

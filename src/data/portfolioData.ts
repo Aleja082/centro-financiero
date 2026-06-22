@@ -38,7 +38,7 @@ const portfolioData: PortfolioData = {
     {
       id: 'btc', nombre: 'Bitcoin', ticker: 'BTC', tipo: 'cripto',
       sector: 'Reserva de valor', pais: 'Global', monedaExposicion: 'USD',
-      cantidad: 0.00275, invertidoCOP: 1263312, actualCOP: 619547,
+      cantidad: 0.00275, coingeckoId: 'bitcoin', invertidoCOP: 1263312, actualCOP: 619547,
       convicción: 'Muy alta', riesgo: 'Medio', horizonte: '10-25 años',
       funcion: 'Núcleo cripto del portafolio — activo con mayor adopción institucional',
       recomendacion: 'acumular',
@@ -49,7 +49,7 @@ const portfolioData: PortfolioData = {
     {
       id: 'eth', nombre: 'Ethereum', ticker: 'ETH', tipo: 'cripto',
       sector: 'Contratos inteligentes', pais: 'Global', monedaExposicion: 'USD',
-      cantidad: 0.04543, invertidoCOP: 444730, actualCOP: 279315,
+      cantidad: 0.04543, coingeckoId: 'ethereum', invertidoCOP: 444730, actualCOP: 279315,
       convicción: 'Alta', riesgo: 'Medio', horizonte: '10-25 años',
       funcion: 'Segunda posición cripto — infraestructura de contratos inteligentes',
       recomendacion: 'acumular',
@@ -60,7 +60,7 @@ const portfolioData: PortfolioData = {
     {
       id: 'sol', nombre: 'Solana', ticker: 'SOL', tipo: 'cripto',
       sector: 'L1 alternativa', pais: 'Global', monedaExposicion: 'USD',
-      cantidad: 0.2253, invertidoCOP: 161760, actualCOP: 56676,
+      cantidad: 0.2253, coingeckoId: 'solana', invertidoCOP: 161760, actualCOP: 56676,
       convicción: 'Media', riesgo: 'Alto', horizonte: '5-10 años',
       funcion: 'Única posición L1 alternativa a mantener — el resto son redundantes',
       recomendacion: 'mantener',
@@ -71,7 +71,7 @@ const portfolioData: PortfolioData = {
     {
       id: 'link', nombre: 'Chainlink', ticker: 'LINK', tipo: 'cripto',
       sector: 'Infraestructura / Oráculos', pais: 'Global', monedaExposicion: 'USD',
-      cantidad: 4.465, invertidoCOP: 306485, actualCOP: 132642,
+      cantidad: 4.465, coingeckoId: 'chainlink', invertidoCOP: 306485, actualCOP: 132642,
       convicción: 'Media', riesgo: 'Alto', horizonte: '5-10 años',
       funcion: 'Infraestructura de datos para contratos inteligentes',
       recomendacion: 'mantener',
@@ -82,7 +82,7 @@ const portfolioData: PortfolioData = {
     {
       id: 'virtual', nombre: 'Virtuals Protocol', ticker: 'VIRTUAL', tipo: 'cripto',
       sector: 'Agentes de IA', pais: 'Global', monedaExposicion: 'USD',
-      cantidad: 71.74, invertidoCOP: 361310, actualCOP: 155150,
+      cantidad: 71.74, coingeckoId: 'virtual-protocol', invertidoCOP: 361310, actualCOP: 155150,
       convicción: 'Media', riesgo: 'Muy alto', horizonte: '3-5 años',
       funcion: 'Apuesta especulativa a la narrativa de agentes de IA en cripto',
       recomendacion: 'reducir',
@@ -93,7 +93,7 @@ const portfolioData: PortfolioData = {
     {
       id: 'render', nombre: 'Render', ticker: 'RENDER', tipo: 'cripto',
       sector: 'IA / Cómputo GPU', pais: 'Global', monedaExposicion: 'USD',
-      cantidad: 12.74, invertidoCOP: 161720, actualCOP: 75018,
+      cantidad: 12.74, coingeckoId: 'render-token', invertidoCOP: 161720, actualCOP: 75018,
       convicción: 'Media', riesgo: 'Muy alto', horizonte: '3-5 años',
       funcion: 'Apuesta especulativa a cómputo GPU descentralizado',
       recomendacion: 'reducir',
@@ -104,7 +104,7 @@ const portfolioData: PortfolioData = {
     {
       id: 'fet', nombre: 'Fetch.ai', ticker: 'FET', tipo: 'cripto',
       sector: 'IA / Agentes autónomos', pais: 'Global', monedaExposicion: 'USD',
-      cantidad: 206.05, invertidoCOP: 567961, actualCOP: 148448,
+      cantidad: 206.05, coingeckoId: 'fetch-ai', invertidoCOP: 567961, actualCOP: 148448,
       convicción: 'Baja', riesgo: 'Muy alto', horizonte: 'Evaluar salida',
       funcion: 'Posición de mayor pérdida relativa en la categoría "IA cripto"',
       recomendacion: 'reducir',
@@ -115,7 +115,7 @@ const portfolioData: PortfolioData = {
     {
       id: 'aero', nombre: 'Aerodrome Finance', ticker: 'AERO', tipo: 'cripto',
       sector: 'DeFi / Exchange descentralizado', pais: 'Global', monedaExposicion: 'USD',
-      cantidad: 70.30, invertidoCOP: 277701, actualCOP: 116118,
+      cantidad: 70.30, coingeckoId: 'aerodrome-finance', invertidoCOP: 277701, actualCOP: 116118,
       convicción: 'Baja', riesgo: 'Muy alto', horizonte: 'Salida',
       funcion: 'Exchange descentralizado de nicho (Base)',
       recomendacion: 'vender',
@@ -126,7 +126,7 @@ const portfolioData: PortfolioData = {
     {
       id: 'sui', nombre: 'Sui', ticker: 'SUI', tipo: 'cripto',
       sector: 'L1 alternativa', pais: 'Global', monedaExposicion: 'USD',
-      cantidad: 33.93, invertidoCOP: 455891, actualCOP: 94292,
+      cantidad: 33.93, coingeckoId: 'sui', invertidoCOP: 455891, actualCOP: 94292,
       convicción: 'Baja', riesgo: 'Muy alto', horizonte: 'Salida',
       funcion: 'L1 alternativa redundante con SOL',
       recomendacion: 'vender',
@@ -137,7 +137,7 @@ const portfolioData: PortfolioData = {
     {
       id: 'arb', nombre: 'Arbitrum', ticker: 'ARB', tipo: 'cripto',
       sector: 'L2 de Ethereum', pais: 'Global', monedaExposicion: 'USD',
-      cantidad: 135.20, invertidoCOP: 240870, actualCOP: 40022,
+      cantidad: 135.20, coingeckoId: 'arbitrum', invertidoCOP: 240870, actualCOP: 40022,
       convicción: 'Baja', riesgo: 'Muy alto', horizonte: 'Salida',
       funcion: 'Capa de escalamiento de Ethereum',
       recomendacion: 'vender',
@@ -148,7 +148,7 @@ const portfolioData: PortfolioData = {
     {
       id: 'dot', nombre: 'Polkadot', ticker: 'DOT', tipo: 'cripto',
       sector: 'L1 alternativa / Interoperabilidad', pais: 'Global', monedaExposicion: 'USD',
-      cantidad: 7.508, invertidoCOP: 101075, actualCOP: 26179,
+      cantidad: 7.508, coingeckoId: 'polkadot', invertidoCOP: 101075, actualCOP: 26179,
       convicción: 'Muy baja', riesgo: 'Muy alto', horizonte: 'Salida',
       funcion: 'L1 alternativa de baja tracción reciente',
       recomendacion: 'vender',
@@ -159,7 +159,7 @@ const portfolioData: PortfolioData = {
     {
       id: 'ada', nombre: 'Cardano', ticker: 'ADA', tipo: 'cripto',
       sector: 'L1 alternativa', pais: 'Global', monedaExposicion: 'USD',
-      cantidad: 26.54, invertidoCOP: 85910, actualCOP: 15745,
+      cantidad: 26.54, coingeckoId: 'cardano', invertidoCOP: 85910, actualCOP: 15745,
       convicción: 'Muy baja', riesgo: 'Muy alto', horizonte: 'Salida',
       funcion: 'L1 alternativa de baja tracción reciente',
       recomendacion: 'vender',
@@ -170,7 +170,7 @@ const portfolioData: PortfolioData = {
     {
       id: 'cgpt', nombre: 'ChainGPT', ticker: 'CGPT', tipo: 'cripto',
       sector: 'IA (small cap)', pais: 'Global', monedaExposicion: 'USD',
-      cantidad: 415.68, invertidoCOP: 139745, actualCOP: 29266,
+      cantidad: 415.68, coingeckoId: 'chaingpt', invertidoCOP: 139745, actualCOP: 29266,
       convicción: 'Muy baja', riesgo: 'Muy alto', horizonte: 'Salida',
       funcion: 'Small cap especulativo de IA',
       recomendacion: 'vender',
@@ -181,7 +181,7 @@ const portfolioData: PortfolioData = {
     {
       id: 'sahara', nombre: 'Sahara AI', ticker: 'SAHARA', tipo: 'cripto',
       sector: 'IA / Datos (small cap)', pais: 'Global', monedaExposicion: 'USD',
-      cantidad: 60, invertidoCOP: 24228, actualCOP: 2942,
+      cantidad: 60, coingeckoId: 'sahara-ai', invertidoCOP: 24228, actualCOP: 2942,
       convicción: 'Muy baja', riesgo: 'Extremo', horizonte: 'Salida',
       funcion: 'Posición especulativa de muy baja capitalización',
       recomendacion: 'vender',
@@ -192,7 +192,7 @@ const portfolioData: PortfolioData = {
     {
       id: 'ondo', nombre: 'Ondo Finance', ticker: 'ONDO', tipo: 'cripto',
       sector: 'Tokenización de activos reales (RWA)', pais: 'Global', monedaExposicion: 'USD',
-      cantidad: 85.83, invertidoCOP: 303260, actualCOP: 0,
+      cantidad: 85.83, coingeckoId: 'ondo-finance', invertidoCOP: 303260, actualCOP: 0,
       convicción: 'N/A', riesgo: 'Extremo', horizonte: 'Pérdida realizada',
       funcion: 'Posición con pérdida total — capital muerto en el portafolio',
       recomendacion: 'vender',
@@ -203,7 +203,7 @@ const portfolioData: PortfolioData = {
     {
       id: 'io', nombre: 'io.net', ticker: 'IO', tipo: 'cripto',
       sector: 'DePIN / Cómputo descentralizado', pais: 'Global', monedaExposicion: 'USD',
-      cantidad: 67.11, invertidoCOP: 158880, actualCOP: 0,
+      cantidad: 67.11, coingeckoId: 'io-net', invertidoCOP: 158880, actualCOP: 0,
       convicción: 'N/A', riesgo: 'Extremo', horizonte: 'Pérdida realizada',
       funcion: 'Posición con pérdida total — capital muerto en el portafolio',
       recomendacion: 'vender',

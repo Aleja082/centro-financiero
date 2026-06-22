@@ -19,6 +19,7 @@ export interface Asset {
   pais: string
   monedaExposicion: 'COP' | 'USD' | 'Global'
   cantidad?: number
+  coingeckoId?: string // solo para cripto — habilita el precio en vivo vía CoinGecko
   invertidoCOP: number
   actualCOP: number
   convicción: Conviccion
