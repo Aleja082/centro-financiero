@@ -2,10 +2,12 @@ import React, { useRef, useState } from 'react'
 import { usePortfolio } from '../context/PortfolioContext'
 import Card from '../components/ui/Card'
 import Badge from '../components/ui/Badge'
+import MarketStatusBar from '../components/ui/MarketStatusBar'
+import { formatCOP } from '../utils/format'
 import { ArrowDownTrayIcon, ArrowUpTrayIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
 
 export default function DataManager() {
-  const { data, isCustomData, importData, resetData, exportData } = usePortfolio()
+  const { data, staticData, isCustomData, importData, resetData, exportData, livePrices, liveTRM } = usePortfolio()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [mensaje, setMensaje] = useState<{ tipo: 'ok' | 'error'; texto: string } | null>(null)
 
@@ -40,10 +42,13 @@ export default function DataManager() {
   return (
     <div className="space-y-6">
       <Card title="Estado de los datos">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 mb-3">
           <Badge variant={isCustomData ? 'azure' : 'neutral'}>{isCustomData ? 'Datos personalizados (importados)' : 'Dataset original del proyecto'}</Badge>
-          <span className="text-xs text-ink-400">Actualizado: {data.meta.fechaActualizacion} · TRM {data.meta.trm}</span>
+          <span className="text-xs text-ink-400">
+            Snapshot base del {staticData.meta.fechaActualizacion} · TRM congelada en el dataset: {formatCOP(staticData.meta.trm, { decimals: 2 })}
+          </span>
         </div>
+        {livePrices.enabled && <MarketStatusBar live={livePrices} trm={liveTRM} />}
       </Card>
 
       <div className="grid sm:grid-cols-2 gap-5">

@@ -4,7 +4,7 @@ import type { Asset, Recomendacion } from '../types/portfolio'
 import Card from '../components/ui/Card'
 import Badge from '../components/ui/Badge'
 import Tabs from '../components/ui/Tabs'
-import LivePriceStatus from '../components/ui/LivePriceStatus'
+import MarketStatusBar from '../components/ui/MarketStatusBar'
 import { formatCOP, formatPercent, plPercent } from '../utils/format'
 import { señalTacticaSalida } from '../utils/liveRecalc'
 
@@ -38,7 +38,7 @@ function impactoDe(asset: Asset): string {
 }
 
 export default function Recommendations() {
-  const { data, staticData, livePrices } = usePortfolio()
+  const { data, staticData, livePrices, liveTRM } = usePortfolio()
   const [tab, setTab] = useState<Recomendacion>('vender')
 
   const staticMap = useMemo(() => new Map(staticData.assets.map((a) => [a.id, a])), [staticData.assets])
@@ -53,7 +53,7 @@ export default function Recommendations() {
 
   return (
     <div className="space-y-6">
-      {livePrices.enabled && <LivePriceStatus live={livePrices} />}
+      {livePrices.enabled && <MarketStatusBar live={livePrices} trm={liveTRM} />}
 
       <Card title="Acciones generales prioritarias" subtitle="No ligadas a un activo específico">
         <div className="grid sm:grid-cols-2 gap-3">

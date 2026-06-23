@@ -4,7 +4,7 @@ import type { SeveridadAlerta, EstadoAlerta } from '../types/portfolio'
 import Card from '../components/ui/Card'
 import Badge from '../components/ui/Badge'
 import Tabs from '../components/ui/Tabs'
-import LivePriceStatus from '../components/ui/LivePriceStatus'
+import MarketStatusBar from '../components/ui/MarketStatusBar'
 import { cn } from '../utils/format'
 
 const severidadConfig: Record<SeveridadAlerta, { label: string; variant: 'coral' | 'amber' | 'azure' | 'neutral' }> = {
@@ -23,7 +23,7 @@ const estadoOptions: { value: EstadoAlerta; label: string }[] = [
 type FiltroEstado = 'todas' | EstadoAlerta
 
 export default function Alerts() {
-  const { data, alertState, setAlertState, livePrices } = usePortfolio()
+  const { data, alertState, setAlertState, livePrices, liveTRM } = usePortfolio()
   const [filtro, setFiltro] = useState<FiltroEstado>('todas')
 
   const alertasConEstado = useMemo(
@@ -36,7 +36,7 @@ export default function Alerts() {
 
   return (
     <div className="space-y-5">
-      {livePrices.enabled && <LivePriceStatus live={livePrices} />}
+      {livePrices.enabled && <MarketStatusBar live={livePrices} trm={liveTRM} />}
 
       <Tabs
         value={filtro}

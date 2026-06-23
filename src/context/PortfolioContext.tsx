@@ -2,6 +2,7 @@ import React, { createContext, useContext, useMemo, useState, useCallback } from
 import type { PortfolioData } from '../types/portfolio'
 import defaultData from '../data/portfolioData'
 import { useLivePrices } from '../hooks/useLivePrices'
+import { useLiveTRM, type LiveTRMState } from '../hooks/useLiveTRM'
 import { aplicarPreciosVivos, recalcularSubScores, recalcularExposiciones, recalcularAlertas, type CoberturaPrecioVivo } from '../utils/liveRecalc'
 
 const STORAGE_KEY = 'portfolio-data-v1'
@@ -34,6 +35,7 @@ interface PortfolioContextValue {
   checklistState: ChecklistStateMap
   toggleChecklistItem: (id: string) => void
   livePrices: LivePricesStatus
+  liveTRM: LiveTRMState
 }
 
 const PortfolioContext = createContext<PortfolioContextValue | undefined>(undefined)
@@ -73,6 +75,9 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
   const [alertState, setAlertStateMap] = useState<EstadoAlertaMap>(() => loadJSON(ALERT_STATE_KEY, {}))
   const [checklistState, setChecklistStateMap] = useState<ChecklistStateMap>(() => loadJSON(CHECKLIST_STATE_KEY, {}))
 
+  // --- TRM en vivo (COP/USD, vía DolarAPI Colombia) ---
+  const liveTRM = useLiveTRM(rawData.meta.trm)
+
   // --- Precios en vivo (cripto, vía CoinGecko) ---
   const coingeckoIds = useMemo(
     () => rawData.assets.filter((a) => a.tipo === 'cripto' && a.coingeckoId).map((a) => a.coingeckoId!),
@@ -81,24 +86,25 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
   const { prices, loading, error, lastUpdated, refresh } = useLivePrices(coingeckoIds)
 
   const { assets: liveAssets, cobertura } = useMemo(
-    () => aplicarPreciosVivos(rawData.assets, prices, rawData.meta.trm),
-    [rawData.assets, rawData.meta.trm, prices],
+    () => aplicarPreciosVivos(rawData.assets, prices, liveTRM.trm),
+    [rawData.assets, liveTRM.trm, prices],
   )
 
   // El resto de la app (dashboard, análisis, alertas, recomendaciones,
   // simulador) consume `data` sin saber que existen precios en vivo: aquí
-  // se inyectan los activos recalculados y se actualizan en cascada los
-  // subscores de salud, la exposición temática y las alertas que dependen
-  // del % de cripto.
+  // se inyectan los activos recalculados, la TRM en vivo (para cualquier
+  // conversión USD/COP), y se actualizan en cascada los subscores de salud,
+  // la exposición temática y las alertas que dependen del % de cripto.
   const data = useMemo<PortfolioData>(() => {
     return {
       ...rawData,
+      meta: { ...rawData.meta, trm: liveTRM.trm },
       assets: liveAssets,
       subScoresSalud: recalcularSubScores(rawData.subScoresSalud, liveAssets),
       exposicionesTematicas: recalcularExposiciones(rawData.exposicionesTematicas, liveAssets),
       alertas: recalcularAlertas(rawData.alertas, liveAssets),
     }
-  }, [rawData, liveAssets])
+  }, [rawData, liveAssets, liveTRM.trm])
 
   const livePrices: LivePricesStatus = useMemo(
     () => ({
@@ -163,8 +169,9 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
       checklistState,
       toggleChecklistItem,
       livePrices,
+      liveTRM,
     }),
-    [data, rawData, isCustomData, importData, resetData, exportData, alertState, setAlertState, checklistState, toggleChecklistItem, livePrices],
+    [data, rawData, isCustomData, importData, resetData, exportData, alertState, setAlertState, checklistState, toggleChecklistItem, livePrices, liveTRM],
   )
 
   return <PortfolioContext.Provider value={value}>{children}</PortfolioContext.Provider>

@@ -38,3 +38,13 @@ export function plPercent(invertido: number, actual: number): number {
 export function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(' ')
 }
+
+export function formatRelativeTime(fecha: Date | null): string {
+  if (!fecha) return 'nunca'
+  const segundos = Math.floor((Date.now() - fecha.getTime()) / 1000)
+  if (segundos < 60) return 'hace unos segundos'
+  const minutos = Math.floor(segundos / 60)
+  if (minutos < 60) return `hace ${minutos} min`
+  const horas = Math.floor(minutos / 60)
+  return `hace ${horas} h`
+}

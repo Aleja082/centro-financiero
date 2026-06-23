@@ -2,9 +2,10 @@ import React, { useMemo, useState } from 'react'
 import { usePortfolio } from '../context/PortfolioContext'
 import { calcularTotales } from '../utils/portfolioMath'
 import { simulate } from '../utils/calculations'
-import { formatCOP, formatPercent } from '../utils/format'
+import { formatCOP, formatUSD, formatPercent } from '../utils/format'
 import Card from '../components/ui/Card'
 import Tabs from '../components/ui/Tabs'
+import MarketStatusBar from '../components/ui/MarketStatusBar'
 import SimulatorChart from '../components/charts/SimulatorChart'
 
 const horizontes = [5, 10, 20, 30] as const
@@ -23,8 +24,9 @@ function Slider({ label, value, onChange, min, max, step, format }: { label: str
 }
 
 export default function Simulator() {
-  const { data } = usePortfolio()
+  const { data, livePrices, liveTRM } = usePortfolio()
   const totales = calcularTotales(data.assets)
+  const trm = liveTRM.trm
 
   const [aporteMensual, setAporteMensual] = useState(500000)
   const [incrementoAnual, setIncrementoAnual] = useState(data.supuestosSimulador.incrementoAnualDefault)
@@ -65,6 +67,8 @@ export default function Simulator() {
 
   return (
     <div className="space-y-6">
+      {livePrices.enabled && <MarketStatusBar live={livePrices} trm={liveTRM} />}
+
       <Card title="Supuestos de la simulación">
         <div className="grid sm:grid-cols-2 gap-6">
           <Slider label="Aporte mensual" value={aporteMensual} onChange={setAporteMensual} min={100000} max={3000000} step={50000} format={formatCOP} />
@@ -73,7 +77,7 @@ export default function Simulator() {
           <div>
             <p className="text-sm font-medium text-ink-700 dark:text-ink-200 mb-1.5">Valor inicial del portafolio</p>
             <p className="text-sm tabular font-medium text-ink-900 dark:text-ink-50">{formatCOP(totales.actual)}</p>
-            <p className="text-xs text-ink-400 mt-0.5">Tomado automáticamente del valor actual de tus posiciones.</p>
+            <p className="text-xs text-ink-400 mt-0.5">≈ {formatUSD(totales.actual / trm)} a la TRM en vivo ({formatCOP(trm, { decimals: 2 })})</p>
           </div>
         </div>
       </Card>
@@ -88,7 +92,7 @@ export default function Simulator() {
           <Card key={r.label} className={`border-l-[3px] ${toneClasses[r.tone].split(' ')[0]}`}>
             <p className={`text-xs font-medium uppercase tracking-wide mb-1 ${toneClasses[r.tone].split(' ').slice(1).join(' ')}`}>{r.label} · {formatPercent(r.tasa * 100)} anual</p>
             <p className="font-display text-xl font-semibold tabular text-ink-900 dark:text-ink-50">{formatCOP(r.nominal)}</p>
-            <p className="text-xs text-ink-400 mt-1">Valor real (ajustado por inflación): {formatCOP(r.real)}</p>
+            <p className="text-xs text-ink-400 mt-1">≈ {formatUSD(r.nominal / trm)} · real ajustado por inflación: {formatCOP(r.real)}</p>
           </Card>
         ))}
       </div>
@@ -97,7 +101,7 @@ export default function Simulator() {
         <SimulatorChart data={serie} />
         <p className="text-xs text-ink-400 mt-3">
           La línea punteada gris muestra el total aportado de tu bolsillo (sin rendimiento). La diferencia con las otras curvas es el efecto del interés compuesto.
-          Estas proyecciones son ilustrativas — ninguna rentabilidad está garantizada.
+          Las conversiones a USD usan la TRM en vivo de DolarAPI Colombia. Estas proyecciones son ilustrativas — ninguna rentabilidad está garantizada.
         </p>
       </Card>
     </div>

@@ -5,7 +5,7 @@ import Card from '../components/ui/Card'
 import Gauge from '../components/ui/Gauge'
 import ProgressBar from '../components/ui/ProgressBar'
 import Semaphore from '../components/ui/Semaphore'
-import LivePriceStatus from '../components/ui/LivePriceStatus'
+import MarketStatusBar from '../components/ui/MarketStatusBar'
 import ExposureBars from '../components/charts/ExposureBars'
 import type { SemaforoNivel } from '../types/portfolio'
 
@@ -25,13 +25,13 @@ function nivelDeValor(v: number): SemaforoNivel {
 }
 
 export default function Analysis() {
-  const { data, livePrices } = usePortfolio()
+  const { data, livePrices, liveTRM } = usePortfolio()
   const score = healthScore(data.subScoresSalud)
   const { label } = healthLabel(score)
 
   return (
     <div className="space-y-6">
-      {livePrices.enabled && <LivePriceStatus live={livePrices} />}
+      {livePrices.enabled && <MarketStatusBar live={livePrices} trm={liveTRM} />}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <Card className="lg:col-span-1 flex flex-col items-center justify-center py-8">

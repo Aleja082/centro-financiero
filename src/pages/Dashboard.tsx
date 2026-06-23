@@ -10,13 +10,13 @@ import Gauge from '../components/ui/Gauge'
 import AllocationDonut from '../components/charts/AllocationDonut'
 import ComparisonBars from '../components/charts/ComparisonBars'
 import Badge from '../components/ui/Badge'
-import LivePriceStatus from '../components/ui/LivePriceStatus'
+import MarketStatusBar from '../components/ui/MarketStatusBar'
 import { ArrowRightIcon } from '@heroicons/react/24/outline'
 
 const severidadVariant = { critico: 'coral', alto: 'amber', medio: 'azure', bajo: 'neutral' } as const
 
 export default function Dashboard() {
-  const { data, livePrices } = usePortfolio()
+  const { data, livePrices, liveTRM } = usePortfolio()
   const { assets, perfil, meta, alertas, asignacionObjetivo } = data
   const totales = calcularTotales(assets)
   const score = healthScore(data.subScoresSalud)
@@ -38,7 +38,7 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      {livePrices.enabled && <LivePriceStatus live={livePrices} />}
+      {livePrices.enabled && <MarketStatusBar live={livePrices} trm={liveTRM} />}
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Valor actual" value={formatCOP(totales.actual)} sub={`Invertido: ${formatCOP(totales.invertido)}`} />
@@ -48,7 +48,7 @@ export default function Dashboard() {
           sub={formatCOP(totales.pl)}
           tone={totales.plPct >= 0 ? 'positive' : 'negative'}
         />
-        <StatCard label="Valor en USD" value={formatUSD(valorUSD)} sub={`TRM ${formatCOP(meta.trm)}`} />
+        <StatCard label="Valor en USD" value={formatUSD(valorUSD)} sub={`TRM ${formatCOP(meta.trm, { decimals: 2 })}`} />
         <StatCard label="Salud del portafolio" value={`${score}/100`} sub={label} tone={score >= 55 ? 'positive' : score >= 35 ? 'warning' : 'negative'} />
       </div>
 

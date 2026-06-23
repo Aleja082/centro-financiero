@@ -17,17 +17,20 @@ más el perfil de inversionista y el análisis del comité de inversiones ya rea
 
 ## Funcionalidades
 
-- **Precios cripto en vivo** — BTC, ETH y el resto de tus criptomonedas se
-  consultan en tiempo real contra la API pública y gratuita de CoinGecko
-  directamente desde el navegador (sin backend, sin clave de API). A partir de
-  ahí, todo lo que depende de esos valores se recalcula en cascada: el valor
-  total y P/L del dashboard, el % de cripto en cada gráfico, el subscore de
-  "Gestión de riesgo" y la alerta de concentración cripto (con su severidad
-  🟢🟡🟠🔴 y el porcentaje exacto actualizándose solos), y una señal táctica
-  📡 en las posiciones marcadas como "reducir"/"vender" que indica si el
-  precio repuntó o profundizó su pérdida desde el corte original. Ver la
-  sección **"Cómo funcionan los precios en vivo"** más abajo para el alcance
-  exacto (qué se actualiza solo y qué sigue siendo manual).
+- **Precios cripto y TRM en vivo** — BTC, ETH y el resto de tus criptomonedas
+  se consultan en tiempo real contra la API pública y gratuita de CoinGecko,
+  y la TRM (COP/USD) contra la API pública de DolarAPI Colombia — ambas
+  directamente desde el navegador (sin backend, sin clave de API). A partir
+  de ahí, todo lo que depende de esos valores se recalcula en cascada: el
+  valor total y P/L del dashboard, la valoración en USD, el % de cripto en
+  cada gráfico, el subscore de "Gestión de riesgo" y la alerta de
+  concentración cripto (con su severidad 🟢🟡🟠🔴 y el porcentaje exacto
+  actualizándose solos), y una señal táctica 📡 en las posiciones marcadas
+  como "reducir"/"vender". Si alguna de las dos APIs no responde, se usa el
+  último valor guardado en Local Storage y se muestra una alerta explícita
+  de datos desactualizados. Ver la sección **"Cómo funcionan los precios y
+  la TRM en vivo"** más abajo para el alcance exacto (qué se actualiza solo
+  y qué sigue siendo manual).
 - **Dashboard** — valor total, rentabilidad, distribución por tipo de activo, país,
   moneda; comparación actual vs. objetivo; alertas prioritarias.
 - **Análisis** — salud del portafolio (0-100) con desglose ponderado, semáforos de
@@ -114,42 +117,57 @@ scripts/
 
 ---
 
-## Cómo funcionan los precios en vivo
+## Cómo funcionan los precios y la TRM en vivo
+
+### Precios cripto (CoinGecko)
 
 - **Fuente:** API pública gratuita de [CoinGecko](https://www.coingecko.com/en/api)
-  (`/api/v3/simple/price`), consultada directamente desde el navegador de quien
-  visita la página — no hay servidor intermedio ni clave de API involucrada.
-- **Frecuencia:** se consulta al abrir cualquier página y luego cada 5 minutos
-  automáticamente mientras la pestaña esté abierta. También hay un botón de
-  actualización manual (ícono ↻) junto al indicador "Precios cripto en vivo".
+  (`/api/v3/simple/price`), consultada directamente desde el navegador — sin
+  servidor intermedio ni clave de API.
+- **Frecuencia:** al abrir cualquier página y luego cada 5 minutos
+  automáticamente. Botón de actualización manual (↻) disponible.
 - **Qué se actualiza solo:** el precio en USD de cada criptomoneda con
-  `coingeckoId` configurado en `src/data/portfolioData.ts` (las 16 posiciones
-  cripto del dataset). A partir de ahí, todo lo derivado se recalcula
-  automáticamente: valor actual y P/L de cada posición, totales y
-  distribución del dashboard, el % de cripto en el portafolio, el subscore de
-  riesgo, la alerta de concentración cripto, y la señal táctica de las
-  posiciones en "reducir"/"vender".
-- **Qué NO se actualiza solo:**
-  - La TRM (COP/USD) — se mantiene fija en `data.meta.trm` hasta que la
-    edites manualmente (sección Datos → Importar, o editando el código).
-  - Las acciones y fondos colombianos (TRII, MPF) — no existe una API
-    gratuita y abierta equivalente para esos instrumentos, así que sus
-    valores siguen siendo manuales.
-  - La clasificación 🟢 Comprar/Acumular, 🟡 Mantener, 🟠 Reducir, 🔴 Vender de
-    cada activo — es un juicio analítico (redundancia, calidad de tesis,
-    convicción), no una regla mecánica de precio, así que no cambia sola solo
-    porque el precio se movió un día. Lo que sí ves en vivo es la señal
-    táctica 📡 que indica si esa salida ya recomendada tiene mejor o peor
-    ventana de ejecución en este momento.
-- **Si la consulta falla** (sin internet, límite de uso alcanzado, CoinGecko
-  caído): la app no se rompe — simplemente muestra el último valor guardado
-  para esa moneda y un aviso "usando últimos valores guardados" en el
-  indicador de estado.
-- **Cobertura de monedas:** los identificadores de CoinGecko para tokens muy
-  pequeños o recientes (ej. SAHARA, CGPT, VIRTUAL) pueden cambiar o no
+  `coingeckoId` configurado en `src/data/portfolioData.ts` (las 16
+  posiciones cripto). A partir de ahí, todo lo derivado se recalcula en
+  cascada: valor actual y P/L de cada posición, totales y distribución del
+  dashboard, % de cripto, subscore de riesgo, alerta de concentración cripto,
+  y la señal táctica 📡 en las posiciones "reducir"/"vender".
+
+### TRM — Tasa Representativa del Mercado COP/USD (DolarAPI Colombia)
+
+- **Fuente:** API pública y gratuita de [DolarAPI Colombia](https://co.dolarapi.com/v1/trm)
+  — la TRM oficial publicada por la Superintendencia Financiera.
+- **Frecuencia:** se consulta al cargar el dashboard (o cualquier página) y
+  se refresca automáticamente cada 30 minutos. Botón de actualización manual
+  (↻) disponible junto al indicador.
+- **Cadena de respaldo si la API falla:**
+  1. Se usa el último valor guardado en **Local Storage** del navegador
+     (clave `trm-live-v1`, con su fecha de consulta).
+  2. Si nunca se guardó un valor (primera vez que se abre la app, o Local
+     Storage deshabilitado), se usa la TRM congelada en el dataset
+     (`data.meta.trm`, $3.426 al 16 de junio de 2026).
+  3. En ambos casos de respaldo se marca el estado como **desactualizado** y
+     se muestra una alerta explícita: *"Datos de TRM desactualizados — no se
+     pudo conectar con DolarAPI Colombia, mostrando el último valor
+     guardado"*, junto a un punto de estado rojo en vez de verde.
+- **Dónde se usa:** todos los cálculos de valoración del portafolio en USD,
+  la conversión de precios cripto en vivo a COP, y los equivalentes en USD
+  que aparecen en el Simulador y el Plan de Aportes. La TRM congelada del
+  dataset (visible en la sección **Datos**) solo se usa como respaldo de
+  último recurso — el resto de la app siempre prioriza la TRM en vivo.
+
+### Qué NO se actualiza solo (en ninguno de los dos casos)
+
+- Las acciones y fondos colombianos (TRII, MPF) — no existe una API gratuita
+  y abierta equivalente para esos instrumentos.
+- La clasificación 🟢 Comprar/Acumular, 🟡 Mantener, 🟠 Reducir, 🔴 Vender de
+  cada activo — es un juicio analítico (redundancia, calidad de tesis,
+  convicción), no una regla mecánica de precio. Lo que sí ves en vivo es el
+  porcentaje, el valor en pesos/dólares, y la señal táctica de cada posición.
+- **Cobertura de monedas cripto:** los identificadores de CoinGecko para
+  tokens muy pequeños o recientes (ej. SAHARA, CGPT, VIRTUAL) pueden no
   resolver siempre. Cada fila de la tabla de Activos muestra un punto verde
-  (🟢 en vivo) o gris (○ valor guardado) junto al valor "Actual" para que
-  sepas exactamente qué se está actualizando en cada momento.
+  (🟢 en vivo) o gris (○ valor guardado) junto al valor "Actual".
 
 ---
 
@@ -192,17 +210,13 @@ editar montos y textos libremente sin que la app rechace el archivo.
 
 - **Multi-portafolio / multi-perfil:** permitir guardar varios escenarios o
   versiones del portafolio (ej. "actual" vs. "objetivo a 12 meses") y compararlos.
-- **Conexión a precios en vivo para acciones y fondos colombianos:** la parte
-  cripto ya se actualiza sola (ver sección de arriba); falta una fuente
+- **Conexión a precios en vivo para acciones y fondos colombianos:** cripto
+  y la TRM ya se actualizan solos (ver sección de arriba); falta una fuente
   equivalente para TRII/MPF. La BVC y los fondos colombianos no tienen una API
   pública gratuita conocida, así que esto probablemente requeriría un scraper
-  propio o una suscripción de datos de mercado — y, a diferencia de cripto,
-  ya no sería viable 100% client-side sin exponer credenciales, por lo que
-  implicaría sumar al menos una función serverless ligera.
-- **TRM en vivo:** hoy la tasa de cambio COP/USD es fija (`data.meta.trm`).
-  Conectar una API gratuita de tipo de cambio haría que el valor en USD del
-  dashboard y la conversión de precios cripto a COP también se actualicen
-  solos.
+  propio o una suscripción de datos de mercado — y, a diferencia de cripto y
+  TRM, ya no sería viable 100% client-side sin exponer credenciales, por lo
+  que implicaría sumar al menos una función serverless ligera.
 - **Exportar reportes en PDF:** un botón "Exportar informe" que genere un PDF del
   dashboard/análisis para guardar un histórico mensual.
 - **Historial de valor del portafolio:** guardar snapshots periódicos en

@@ -1,21 +1,25 @@
 import React, { useState } from 'react'
 import { usePortfolio } from '../context/PortfolioContext'
 import Card from '../components/ui/Card'
-import { formatCOP } from '../utils/format'
+import MarketStatusBar from '../components/ui/MarketStatusBar'
+import { formatCOP, formatUSD } from '../utils/format'
 import { calcularPlanPersonalizado } from '../utils/calculations'
 
 export default function Contributions() {
-  const { data } = usePortfolio()
+  const { data, livePrices, liveTRM } = usePortfolio()
   const [montoPersonalizado, setMontoPersonalizado] = useState(750000)
+  const trm = liveTRM.trm
 
   const plantilla = data.planesAporte[0].asignaciones.map((a) => ({ id: a.activoId, nombre: a.nombre, porcentaje: a.porcentaje }))
   const personalizado = calcularPlanPersonalizado(montoPersonalizado, plantilla)
 
   return (
     <div className="space-y-6">
+      {livePrices.enabled && <MarketStatusBar live={livePrices} trm={liveTRM} />}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {data.planesAporte.map((plan) => (
-          <Card key={plan.montoMensual} title={`${formatCOP(plan.montoMensual)} / mes`}>
+          <Card key={plan.montoMensual} title={`${formatCOP(plan.montoMensual)} / mes`} subtitle={`≈ ${formatUSD(plan.montoMensual / trm)} a la TRM en vivo`}>
             <div className="space-y-2.5">
               {plan.asignaciones.map((a) => {
                 const valor = Math.round((plan.montoMensual * a.porcentaje) / 100)
@@ -42,7 +46,10 @@ export default function Contributions() {
         <div className="mb-5">
           <div className="flex items-center justify-between mb-2">
             <label htmlFor="monto" className="text-sm font-medium text-ink-700 dark:text-ink-200">Monto mensual</label>
-            <span className="font-display text-lg font-semibold tabular text-ink-900 dark:text-ink-50">{formatCOP(montoPersonalizado)}</span>
+            <div className="text-right">
+              <span className="font-display text-lg font-semibold tabular text-ink-900 dark:text-ink-50 block">{formatCOP(montoPersonalizado)}</span>
+              <span className="text-[11px] text-ink-400">≈ {formatUSD(montoPersonalizado / trm)}</span>
+            </div>
           </div>
           <input
             id="monto"
@@ -65,7 +72,7 @@ export default function Contributions() {
             <div key={p.id} className="rounded-lg bg-ink-50 dark:bg-ink-800/60 p-3">
               <p className="text-sm font-medium text-ink-800 dark:text-ink-100">{p.nombre}</p>
               <p className="font-display text-base font-semibold tabular text-ink-900 dark:text-ink-50 mt-1">{formatCOP(p.valorExacto)}</p>
-              <p className="text-xs text-ink-400">{p.porcentaje}% del aporte</p>
+              <p className="text-xs text-ink-400">{p.porcentaje}% del aporte · ≈ {formatUSD(p.valorExacto / trm)}</p>
             </div>
           ))}
         </div>

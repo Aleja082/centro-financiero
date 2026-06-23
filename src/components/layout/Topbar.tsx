@@ -3,10 +3,10 @@ import { Bars3Icon } from '@heroicons/react/24/outline'
 import { usePortfolio } from '../../context/PortfolioContext'
 import { calcularTotales } from '../../utils/portfolioMath'
 import { formatCOP, formatPercent } from '../../utils/format'
-import LivePriceStatus from '../ui/LivePriceStatus'
+import MarketStatusBar from '../ui/MarketStatusBar'
 
 export default function Topbar({ title, subtitle, onMenuClick }: { title: string; subtitle?: string; onMenuClick: () => void }) {
-  const { data, livePrices } = usePortfolio()
+  const { data, livePrices, liveTRM } = usePortfolio()
   const totales = calcularTotales(data.assets)
 
   return (
@@ -30,7 +30,7 @@ export default function Topbar({ title, subtitle, onMenuClick }: { title: string
         </div>
       </div>
       <div className="px-4 sm:px-6 pb-2.5 -mt-1">
-        <LivePriceStatus live={livePrices} compact />
+        <MarketStatusBar live={livePrices} trm={liveTRM} compact />
       </div>
     </header>
   )
