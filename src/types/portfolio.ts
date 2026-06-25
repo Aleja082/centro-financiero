@@ -20,6 +20,7 @@ export interface Asset {
   monedaExposicion: 'COP' | 'USD' | 'Global'
   cantidad?: number
   coingeckoId?: string // solo para cripto — habilita el precio en vivo vía CoinGecko
+  stooqSymbol?: string // solo para acciones/ETFs con cotización internacional (ej. NU en NYSE) — habilita precio en vivo best-effort vía Stooq
   invertidoCOP: number
   actualCOP: number
   convicción: Conviccion
@@ -138,6 +139,7 @@ export interface PortfolioData {
     trm: number
     version: string
   }
+  liquidezCOP?: number
   perfil: PerfilInversionista
   assets: Asset[]
   subScoresSalud: SubScore[]

@@ -13,6 +13,8 @@ import Contributions from './pages/Contributions'
 import Simulator from './pages/Simulator'
 import Opportunities from './pages/Opportunities'
 import DataManager from './pages/DataManager'
+import Movimientos from './pages/Movimientos'
+import Rebalanceo from './pages/Rebalanceo'
 
 export default function App() {
   return (
@@ -24,6 +26,8 @@ export default function App() {
               <Route path="/" element={<Dashboard />} />
               <Route path="/analisis" element={<Analysis />} />
               <Route path="/activos" element={<Assets />} />
+              <Route path="/movimientos" element={<Movimientos />} />
+              <Route path="/rebalanceo" element={<Rebalanceo />} />
               <Route path="/recomendaciones" element={<Recommendations />} />
               <Route path="/alertas" element={<Alerts />} />
               <Route path="/checklist" element={<Checklist />} />

@@ -6,7 +6,19 @@ import { CheckCircleIcon } from '@heroicons/react/24/solid'
 import { cn } from '../utils/format'
 
 export default function Checklist() {
-  const { data, checklistState, toggleChecklistItem } = usePortfolio()
+  const { data, checklistState, toggleChecklistItem, alertasDinamicas, rebalanceo } = usePortfolio()
+
+  const sugerencias = useMemo(() => {
+    const items: string[] = []
+    for (const f of rebalanceo) {
+      if (f.accion === 'comprar') items.push(`Comprar más ${f.etiqueta} (le faltan ${Math.abs(f.brechaPct)} pp para su objetivo)`)
+      if (f.accion === 'vender') items.push(`Reducir exposición a ${f.etiqueta} (excede su objetivo por ${f.brechaPct} pp)`)
+    }
+    for (const a of alertasDinamicas) {
+      if (a.severidad === 'critico' || a.severidad === 'alto') items.push(`Revisar alerta: ${a.titulo}`)
+    }
+    return Array.from(new Set(items)).slice(0, 8)
+  }, [rebalanceo, alertasDinamicas])
 
   const grupos = useMemo(() => {
     const map = new Map<string, typeof data.checklist>()
@@ -23,6 +35,18 @@ export default function Checklist() {
 
   return (
     <div className="space-y-6">
+      {sugerencias.length > 0 && (
+        <Card title="Sugeridas automáticamente" subtitle="Generadas en vivo por el motor de rebalanceo y alertas — no se guardan como tareas fijas">
+          <div className="space-y-1.5">
+            {sugerencias.map((s, i) => (
+              <div key={i} className="flex items-start gap-2 text-sm text-ink-700 dark:text-ink-200 px-1">
+                <span className="text-signal-azure mt-0.5">☐</span> {s}
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
       <Card>
         <div className="flex items-center justify-between mb-2">
           <p className="text-sm font-medium text-ink-700 dark:text-ink-200">Progreso general</p>

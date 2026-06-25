@@ -31,17 +31,30 @@ más el perfil de inversionista y el análisis del comité de inversiones ya rea
   de datos desactualizados. Ver la sección **"Cómo funcionan los precios y
   la TRM en vivo"** más abajo para el alcance exacto (qué se actualiza solo
   y qué sigue siendo manual).
-- **Dashboard** — valor total, rentabilidad, distribución por tipo de activo, país,
-  moneda; comparación actual vs. objetivo; alertas prioritarias.
+- **Movimientos del portafolio** — registra compra, venta, aporte, retiro,
+  dividendo, staking, split, fusión y conversión desde un formulario (o
+  describiéndolo en lenguaje natural). Todo se recalcula solo: cantidades,
+  costo promedio, P/L, distribución, alertas y rebalanceo. Historial
+  permanente filtrable por fecha. Ver **"Sistema vivo de seguimiento"** más
+  abajo.
+- **Rebalanceo en vivo** — tabla de asignación actual vs. objetivo con
+  sugerencias de cuánto comprar/vender de cada categoría, en pesos.
+- **Motor de alertas automáticas** — umbrales configurables (caída/subida %
+  desde el costo, concentración por sector/país), recalculado en cada
+  cambio de precio o movimiento, separado de las alertas curadas del comité.
+- **Dashboard** — valor total, rentabilidad total y anualizada (aproximada), P/L
+  por activo, próxima acción recomendada, oportunidades detectadas, liquidez
+  disponible, distribución por tipo de activo/país/moneda, comparación vs. objetivo.
 - **Análisis** — salud del portafolio (0-100) con desglose ponderado, semáforos de
   exposición temática (tecnología, IA, cripto, mercados emergentes).
 - **Activos** — tabla filtrable (cripto / acciones / fondos) con fila expandible:
   tesis, ventajas, riesgos, convicción, riesgo y recomendación por activo.
 - **Recomendaciones** — centro agrupado por 🟢 Acumular/Comprar, 🟡 Mantener,
   🟠 Reducir, 🔴 Vender, con motivo, prioridad, impacto esperado y confianza.
-- **Alertas** — sistema con severidad (bajo/medio/alto/crítico) y estado persistente
-  (pendiente/revisada/resuelta) guardado en `localStorage`.
-- **Checklist** — tareas accionables agrupadas, con progreso persistente.
+- **Alertas** — motor automático + alertas curadas, con severidad
+  (bajo/medio/alto/crítico) y estado persistente (pendiente/revisada/resuelta).
+- **Checklist** — sugerencias automáticas (desde el motor de alertas/rebalanceo)
+  más tareas manuales agrupadas, con progreso persistente.
 - **Plan de aportes** — escenarios fijos de $200.000 / $500.000 / $1.000.000 COP
   mensuales, más una calculadora de monto personalizado con slider.
 - **Simulador financiero** — aporte mensual, incremento anual, inflación, tres
@@ -77,10 +90,11 @@ npm run dev        # http://localhost:5173
 ```
 
 ```bash
-npm run build       # genera dist/
-npm run preview      # sirve dist/ localmente para verificar el build de producción
-npm run smoke-test   # renderiza las 10 rutas en un entorno headless (jsdom) y reporta errores
-npm run gen-example  # regenera public/data/portfolio.example.json a partir de src/data/portfolioData.ts
+npm run build         # genera dist/
+npm run preview        # sirve dist/ localmente para verificar el build de producción
+npm run smoke-test     # renderiza las 12 rutas en un entorno headless (jsdom) y reporta errores
+npm run test-engines   # 24 aserciones sobre movimientos/alertas/rebalanceo/parser NL
+npm run gen-example    # regenera public/data/portfolio.example.json a partir de src/data/portfolioData.ts
 ```
 
 Para desplegar a GitHub Pages, Vercel, Netlify o Cloudflare Pages, ver
@@ -92,27 +106,39 @@ Para desplegar a GitHub Pages, Vercel, Netlify o Cloudflare Pages, ver
 
 ```
 src/
-├── types/portfolio.ts        # Modelo de datos central (única fuente de verdad de tipos)
+├── types/
+│   ├── portfolio.ts          # Modelo de datos central (única fuente de verdad de tipos)
+│   └── movimientos.ts        # Tipos del ledger de movimientos y umbrales de alertas
 ├── data/portfolioData.ts     # Dataset real, tipado con PortfolioData
 ├── context/
 │   ├── ThemeContext.tsx      # Modo oscuro/claro + persistencia
-│   └── PortfolioContext.tsx  # Datos del portafolio + import/export + estado de alertas/checklist
-├── hooks/useLocalStorage.ts
+│   └── PortfolioContext.tsx  # Datos + precios/TRM/acciones en vivo + movimientos + alertas + rebalanceo
+├── hooks/
+│   ├── useLocalStorage.ts
+│   ├── useLivePrices.ts      # Precios cripto en vivo (CoinGecko)
+│   ├── useLiveTRM.ts         # TRM en vivo (DolarAPI Colombia)
+│   └── useLiveStockPrices.ts # Precios de acciones "best-effort" (Stooq + Twelve Data opcional)
 ├── utils/
 │   ├── format.ts             # formatCOP, formatUSD, formatPercent, etc.
 │   ├── calculations.ts       # healthScore, simulate() (motor del simulador)
-│   └── portfolioMath.ts      # totales, agrupaciones por tipo/país/moneda
+│   ├── portfolioMath.ts      # totales, agrupaciones por tipo/país/moneda
+│   ├── liveRecalc.ts         # Recalcula subscores/exposición/alertas con precios en vivo
+│   ├── movimientos.ts        # Motor de los 9 tipos de movimiento
+│   ├── alertEngine.ts        # Motor de alertas automáticas (umbrales configurables)
+│   ├── rebalanceEngine.ts    # Motor de rebalanceo (actual vs. objetivo)
+│   └── nlParser.ts           # Parser por patrones para "Analizar Nuevo Movimiento"
 ├── components/
-│   ├── ui/                   # Card, Badge, Gauge, ProgressBar, Semaphore, Tabs, RiesgoTag...
+│   ├── ui/                   # Card, Badge, Gauge, ProgressBar, Semaphore, Tabs, RiesgoTag, MarketStatusBar...
 │   ├── layout/                # Sidebar, Topbar, Layout, HorizonRuler
 │   └── charts/                # AllocationDonut, ExposureBars, ComparisonBars, SimulatorChart
-├── pages/                     # Una página por ruta (Dashboard, Analysis, Assets, ...)
+├── pages/                     # Una página por ruta (Dashboard, Analysis, Assets, Movimientos, Rebalanceo, ...)
 └── App.tsx                    # HashRouter + providers
 
 public/data/portfolio.example.json   # Ejemplo de JSON importable (mismo esquema que PortfolioData)
 scripts/
 ├── gen-example.mts            # Regenera el JSON de ejemplo desde el dataset TS
-└── smoke-test.mts             # Prueba de humo headless (jsdom) de las 10 rutas
+├── smoke-test.mts             # Prueba de humo headless (jsdom) de las 12 rutas
+└── test-engines.mts           # 24 aserciones funcionales (movimientos, alertas, rebalanceo, parser NL)
 ```
 
 ---
@@ -171,23 +197,126 @@ scripts/
 
 ---
 
-## Sistema de actualización de datos
+## Sistema vivo de seguimiento de inversiones
 
-No hay base de datos ni backend. Hay dos formas de mantener la información al día:
+La app está diseñada para que **nunca tengas que tocar código ni editar JSON a
+mano** para tu uso del día a día. Todo movimiento se registra desde la
+interfaz y se propaga solo.
 
-1. **Desde la propia app (recomendado para uso cotidiano):** ve a la sección
-   **Datos** → Importar, y sube un JSON con el mismo esquema que
-   `public/data/portfolio.example.json`. Se guarda en `localStorage` de tu navegador
-   y todas las páginas (dashboard, análisis, alertas, simulador) se recalculan al
-   instante. Puedes exportar primero como respaldo.
-2. **Editando el código (para cambiar el dato por defecto que ven todos los
-   visitantes nuevos):** edita `src/data/portfolioData.ts`, corre
-   `npm run build` y vuelve a desplegar.
+### Movimientos del portafolio
 
-El tipo `PortfolioData` (en `src/types/portfolio.ts`) es el contrato que cualquier
-JSON importado debe cumplir. La validación al importar es mínima a propósito (solo
-confirma que existan `assets`, `alertas`, `checklist` y `perfil`) para que puedas
-editar montos y textos libremente sin que la app rechace el archivo.
+En la sección **Movimientos** puedes registrar 9 tipos de operación: Compra,
+Venta, Aporte, Retiro, Dividendo, Staking, Split, Fusión y Conversión. Cada
+registro guarda fecha, hora, activo, ticker, cantidad, precio unitario,
+comisión, moneda y comentarios, y queda en un **historial permanente**
+(`localStorage`, clave `movimientos-ledger-v2`) que puedes filtrar por rango
+de fechas.
+
+Qué hace cada tipo, en resumen:
+
+| Tipo | Efecto |
+|---|---|
+| Compra | Suma al invertido (y a la cantidad) de un activo existente, o crea uno nuevo |
+| Venta | Resta proporcionalmente invertido/cantidad (parcial) o liquida la posición (100%) |
+| Aporte / Retiro | Suma/resta de tu **liquidez disponible** — no afecta ninguna posición |
+| Dividendo | Suma a tu liquidez disponible; no cambia la posición que lo pagó |
+| Staking | Aumenta la cantidad del activo cripto con costo base $0 (recompensa libre) |
+| Split | Multiplica la cantidad por el factor indicado; el valor total no cambia |
+| Fusión / Conversión | Traslada el valor de un activo de origen a uno de destino (existente o nuevo) |
+
+Las compras/ventas en USD se convierten a COP automáticamente con la **TRM en
+vivo** del momento.
+
+### Analizar Nuevo Movimiento (asistente de lenguaje natural)
+
+En la misma sección hay un cuadro de texto donde puedes escribir frases como:
+
+> "Compré 0.5 acciones de VOO por 290 USD"
+> "Vendí 50% de mi posición en BTC"
+
+Es un **parser basado en patrones** (`src/utils/nlParser.ts`), no un modelo de
+lenguaje — reconoce el tipo de movimiento (verbos como compré/vendí/aporté),
+el ticker, el monto/moneda y el porcentaje cuando la frase se parece a los
+ejemplos. Siempre muestra una **vista previa con nivel de confianza** antes
+de aplicar nada; si no logra interpretar la frase, te lo dice explícitamente
+en vez de adivinar, y el formulario manual de abajo queda como respaldo
+confiable para cualquier caso ambiguo.
+
+### Recálculo automático en cascada
+
+Cada movimiento (y cada actualización de precio en vivo) recalcula al
+instante, sin pedírselo a nadie: cantidades, valor invertido/actual, P/L%,
+distribución por tipo/país/moneda/sector, el subscore de riesgo, y todas las
+alertas y el rebalanceo descritos abajo.
+
+### Motor de alertas automáticas (umbrales configurables)
+
+En **Alertas** hay un panel "Configurar umbrales" con 4 controles deslizantes:
+caída/subida % desde el costo que dispara una alerta por activo, y
+concentración máxima por sector/país. El motor (`src/utils/alertEngine.ts`)
+recorre tus posiciones en vivo y genera alertas con fecha, prioridad,
+motivo y acción sugerida — separadas de las alertas curadas del comité de
+inversiones (esas son cualitativas y no cambian solas con el precio).
+
+### Rebalanceo en vivo
+
+La sección **Rebalanceo** compara tu asignación actual (con precios y TRM en
+vivo) contra `asignacionObjetivo` y te dice exactamente cuánto comprar o
+vender de cada categoría, en pesos, para volver al objetivo
+(`src/utils/rebalanceEngine.ts`).
+
+### Checklist dinámico
+
+**Checklist** ahora muestra una sección "Sugeridas automáticamente" arriba de
+tus tareas manuales, generada en vivo a partir del motor de alertas y de
+rebalanceo (ej. "Comprar más ETF global", "Reducir exposición a BTC").
+
+### Precios de acciones/ETF — qué es realmente posible
+
+Pediste integrar Yahoo Finance, Alpha Vantage, Twelve Data, Finnhub y Stooq.
+Honestamente: **ninguna de esas API cubre la Bolsa de Valores de Colombia ni
+fondos colombianos** (PFAVAL, MINEROS, GEB, CEMARGOS, ICHNCO, TRIIRENTA,
+500 ACCIONES US, DONAMICO, MPF Global) — no es una limitación de esta app,
+es que ese dato simplemente no se publica en ninguna API gratuita conocida.
+
+Lo que sí se implementó:
+
+- **Stooq (sin clave, mejor esfuerzo):** para activos con `stooqSymbol`
+  configurado y `cantidad` conocida (hoy ninguno, porque no tenemos el número
+  de acciones de NU — agrégalo desde un movimiento de compra para activarlo).
+  Se refresca cada hora, con botón de actualización manual implícito en el
+  refresco de la barra de estado.
+- **Twelve Data (opcional, con tu propia clave):** en **Datos**, puedes pegar
+  tu clave gratuita de Twelve Data — se guarda **solo en tu navegador**
+  (`localStorage`), nunca en el código público del proyecto. Así, ningún
+  visitante del repositorio puede ver ni gastar tu cupo gratuito.
+- **Para todo lo demás (BVC + fondos colombianos):** la tabla "Actualizar
+  valores de mercado" en **Movimientos** sigue siendo la herramienta
+  correcta — un campo + un clic cada vez que revises tu extracto de TRII/MPF.
+
+### Liquidez disponible
+
+Los Aportes y Retiros (y los Dividendos recibidos) se acumulan en un campo
+`liquidezCOP` separado de las posiciones — visible en el Dashboard y en
+Rebalanceo — para que sepas cuánto dinero tienes disponible sin invertir
+todavía.
+
+---
+
+## Sistema de actualización de datos (alternativa masiva)
+
+Para respaldos completos o ediciones masivas (no para el día a día):
+
+1. **Exportar/Importar JSON** en la sección **Datos** — sube un archivo con
+   el mismo esquema que `public/data/portfolio.example.json`.
+2. **Editando el código:** edita `src/data/portfolioData.ts`, corre
+   `npm run build` y vuelve a desplegar (cambia el dato por defecto que ven
+   los visitantes nuevos, no el de tu propio navegador).
+
+El tipo `PortfolioData` (en `src/types/portfolio.ts`) es el contrato que
+cualquier JSON importado debe cumplir. La validación al importar es mínima a
+propósito (solo confirma que existan `assets`, `alertas`, `checklist` y
+`perfil`) para que puedas editar montos y textos libremente.
 
 ---
 
@@ -199,10 +328,19 @@ editar montos y textos libremente sin que la app rechace el archivo.
 - **`base: './'`** en `vite.config.ts`: las rutas de los assets son relativas, así que
   el mismo build funciona en la raíz de un dominio (Vercel/Netlify/Cloudflare) o en un
   subpath (`usuario.github.io/repo/`).
-- **Sin backend, sin claves de API:** toda la lógica (salud del portafolio,
-  simulador, agregaciones) corre en el navegador. Esto hace que el despliegue sea
+- **Sin backend, sin claves de API expuestas:** toda la lógica (salud del portafolio,
+  simulador, motor de alertas, rebalanceo, agregaciones) corre en el navegador. Esto hace que el despliegue sea
   trivial y que tus datos financieros nunca salgan de tu propio navegador salvo que
-  tú decidas exportarlos.
+  tú decidas exportarlos. La única clave opcional (Twelve Data) la guarda cada
+  visitante en su propio `localStorage`, nunca en el bundle público.
+- **Ledger + materialización, no event-sourcing puro:** cada movimiento se
+  aplica inmediatamente sobre el activo afectado (cantidad/invertido/actual) Y
+  se guarda en el historial — así el dashboard no tiene que "reproducir" años
+  de movimientos en cada carga, pero conservas el registro completo para auditar.
+- **El motor de alertas dinámico mide "desde el costo", no "desde ayer":** sin
+  snapshots diarios históricos, la comparación más honesta y útil para un
+  inversionista de largo plazo es el P/L% desde el precio de compra, no el
+  movimiento intradiario — por eso los umbrales de caída/subida se miden así.
 
 ---
 
@@ -210,27 +348,39 @@ editar montos y textos libremente sin que la app rechace el archivo.
 
 - **Multi-portafolio / multi-perfil:** permitir guardar varios escenarios o
   versiones del portafolio (ej. "actual" vs. "objetivo a 12 meses") y compararlos.
-- **Conexión a precios en vivo para acciones y fondos colombianos:** cripto
-  y la TRM ya se actualizan solos (ver sección de arriba); falta una fuente
-  equivalente para TRII/MPF. La BVC y los fondos colombianos no tienen una API
-  pública gratuita conocida, así que esto probablemente requeriría un scraper
-  propio o una suscripción de datos de mercado — y, a diferencia de cripto y
-  TRM, ya no sería viable 100% client-side sin exponer credenciales, por lo
-  que implicaría sumar al menos una función serverless ligera.
+- **Rentabilidad anualizada con XIRR real:** el dashboard usa hoy un CAGR
+  simplificado (asume todo el capital invertido desde la fecha del snapshot).
+  Con el historial de movimientos ya guardado, se puede calcular una
+  rentabilidad money-weighted real (XIRR) que respete la fecha exacta de cada
+  aporte/retiro/compra — más preciso para un portafolio con flujos irregulares.
+- **Snapshots diarios para alertas de movimiento intradiario:** el motor de
+  alertas mide caída/subida "desde el costo" porque no hay histórico de
+  precios día a día guardado. Guardar un snapshot diario (cron-like, al abrir
+  la app una vez por día) permitiría alertas de "cayó X% hoy", más cercanas a
+  lo que pediste originalmente.
+- **Ampliar cobertura de Stooq/Twelve Data:** hoy solo NU tiene `stooqSymbol`
+  configurado, y le falta la cantidad de acciones para activarse. Si agregas
+  ETFs internacionales (VOO, CSPX, QQQ) vía Movimientos con su ticker y
+  cantidad, se puede sumar su símbolo de Stooq fácilmente.
 - **Exportar reportes en PDF:** un botón "Exportar informe" que genere un PDF del
   dashboard/análisis para guardar un histórico mensual.
-- **Historial de valor del portafolio:** guardar snapshots periódicos en
-  `localStorage` (o en un backend ligero) para graficar la evolución real del
-  patrimonio mes a mes, no solo la foto actual.
 - **Autenticación opcional + sincronización en la nube:** para quienes quieran ver su
   portafolio desde varios dispositivos sin reimportar el JSON manualmente.
 - **Cálculo de impuestos colombiano:** módulo que estime la retención de dividendos
   (ETFs US-domiciliados vs. UCITS) y el efecto de la declaración de renta sobre
   ganancias en cripto y acciones internacionales.
-- **Code-splitting:** el bundle de producción actual pesa ~675 KB sin comprimir
-  (~192 KB con gzip) porque Recharts y Heroicons se cargan todos de una vez; dividir
-  por ruta con `React.lazy()` reduciría la carga inicial.
+- **Code-splitting:** Recharts pesa ~411 KB sin comprimir por sí solo; dividir
+  por ruta con `React.lazy()` reduciría la carga inicial de páginas que no
+  usan gráficos (ej. Movimientos, Datos).
+- **Asistente de lenguaje natural más robusto:** el parser actual
+  (`src/utils/nlParser.ts`) es por patrones/regex — funciona con frases
+  cercanas a los ejemplos dados. Una versión más flexible necesitaría una
+  llamada a un modelo de lenguaje real (ej. API de Anthropic), lo cual
+  implica que cada usuario aporte su propia clave (igual que con Twelve
+  Data) y asuma el costo asociado — no se implementó por defecto para no
+  introducir un costo no solicitado.
 - **Tests automatizados más profundos:** el proyecto incluye un smoke test headless
-  (`npm run smoke-test`) que verifica que las 10 rutas rendericen sin errores; el
-  siguiente paso natural es añadir Vitest + React Testing Library para probar lógica
-  específica (cálculo de salud del portafolio, simulador, import/export de JSON).
+  (`npm run smoke-test`, 12 rutas) y un test funcional de los motores de
+  movimientos/alertas/rebalanceo/parser (`npm run test-engines`, 24
+  aserciones); el siguiente paso natural es Vitest + React Testing Library
+  para probar interacciones de UI (clicks, formularios) directamente.

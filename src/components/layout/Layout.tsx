@@ -7,6 +7,8 @@ const titles: Record<string, { title: string; subtitle?: string }> = {
   '/': { title: 'Dashboard', subtitle: 'Resumen ejecutivo de tu portafolio' },
   '/analisis': { title: 'Análisis del portafolio', subtitle: 'Salud, diversificación, riesgo y exposición temática' },
   '/activos': { title: 'Activos', subtitle: 'Detalle individual de cada posición' },
+  '/movimientos': { title: 'Movimientos del portafolio', subtitle: 'Registra compras, ventas, aportes, dividendos y más' },
+  '/rebalanceo': { title: 'Rebalanceo', subtitle: 'Asignación actual vs. objetivo, recalculada en vivo' },
   '/recomendaciones': { title: 'Centro de recomendaciones', subtitle: 'Qué comprar, mantener, reducir y vender' },
   '/alertas': { title: 'Alertas', subtitle: 'Sistema de alertas inteligentes' },
   '/checklist': { title: 'Checklist', subtitle: 'Tareas accionables de tu plan' },

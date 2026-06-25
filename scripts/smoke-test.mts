@@ -55,7 +55,7 @@ const React = (await import('react')).default
 const { createRoot } = await import('react-dom/client')
 const { default: App } = await import('../src/App')
 
-const rutas = ['/', '/analisis', '/activos', '/recomendaciones', '/alertas', '/checklist', '/aportes', '/simulador', '/oportunidades', '/datos']
+const rutas = ['/', '/analisis', '/activos', '/movimientos', '/rebalanceo', '/recomendaciones', '/alertas', '/checklist', '/aportes', '/simulador', '/oportunidades', '/datos']
 
 async function visitarRuta(hash: string) {
   dom.window.location.hash = hash

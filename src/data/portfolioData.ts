@@ -260,7 +260,9 @@ const portfolioData: PortfolioData = {
     {
       id: 'nuco', nombre: 'Nu Holdings (Nubank)', ticker: 'NU', tipo: 'accion',
       sector: 'Fintech / Banca digital LATAM', pais: 'Internacional (NYSE)', monedaExposicion: 'USD',
-      invertidoCOP: 43960, actualCOP: 39632,
+      stooqSymbol: 'nu.us',
+      cantidad: 1,
+      invertidoCOP: 48760, actualCOP: 43000,
       convicción: 'Alta', riesgo: 'Alto', horizonte: '5-15 años',
       funcion: 'Apuesta de crecimiento en disrupción bancaria digital en LATAM',
       recomendacion: 'mantener',

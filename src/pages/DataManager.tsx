@@ -7,9 +7,10 @@ import { formatCOP } from '../utils/format'
 import { ArrowDownTrayIcon, ArrowUpTrayIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
 
 export default function DataManager() {
-  const { data, staticData, isCustomData, importData, resetData, exportData, livePrices, liveTRM } = usePortfolio()
+  const { data, staticData, isCustomData, importData, resetData, exportData, livePrices, liveTRM, liveStocks } = usePortfolio()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [mensaje, setMensaje] = useState<{ tipo: 'ok' | 'error'; texto: string } | null>(null)
+  const [keyInput, setKeyInput] = useState(liveStocks.apiKeyTwelveData)
 
   function handleExport() {
     const blob = new Blob([exportData()], { type: 'application/json' })
@@ -94,12 +95,33 @@ export default function DataManager() {
         </button>
       </Card>
 
-      <Card title="Cómo actualizar tus datos periódicamente" subtitle="Sistema de actualización recomendado">
+      <Card title="Clave opcional de Twelve Data (precios de acciones internacionales)" subtitle="Se guarda solo en este navegador — nunca en el código del proyecto">
+        <p className="text-sm text-ink-500 dark:text-ink-400 mb-3">
+          Sin esta clave, la app ya intenta precio en vivo gratis vía Stooq para acciones internacionales (ej. NU). Si quieres más cobertura/confiabilidad,
+          crea una clave gratuita en <a href="https://twelvedata.com" target="_blank" rel="noreferrer" className="text-signal-azure hover:underline">twelvedata.com</a> y pégala aquí.
+          Esto no cubre acciones ni fondos colombianos (BVC, TRII, MPF) — esos no tienen ninguna API gratuita disponible.
+        </p>
+        <div className="flex gap-2">
+          <input
+            value={keyInput}
+            onChange={(e) => setKeyInput(e.target.value)}
+            placeholder="Tu clave de Twelve Data (opcional)"
+            className="flex-1 rounded-lg border border-ink-200 dark:border-ink-600 bg-white dark:bg-ink-800 px-3 py-2 text-sm text-ink-900 dark:text-ink-50 focus:outline-none focus:ring-2 focus:ring-signal-emerald/40"
+          />
+          <button
+            onClick={() => { liveStocks.setApiKeyTwelveData(keyInput); setMensaje({ tipo: 'ok', texto: 'Clave guardada en este navegador.' }) }}
+            className="rounded-lg bg-ink-900 dark:bg-signal-emerald text-white dark:text-ink-950 px-4 py-2 text-sm font-medium hover:opacity-90 transition-opacity"
+          >
+            Guardar
+          </button>
+        </div>
+      </Card>
+
+      <Card title="Cómo mantener tus datos al día" subtitle="Flujo recomendado para tus movimientos diarios">
         <ol className="list-decimal list-inside space-y-2 text-sm text-ink-600 dark:text-ink-300">
-          <li>Exporta tu JSON actual desde esta misma página como respaldo.</li>
-          <li>Edita los valores de <code className="text-xs bg-ink-100 dark:bg-ink-800 px-1 py-0.5 rounded">invertidoCOP</code> / <code className="text-xs bg-ink-100 dark:bg-ink-800 px-1 py-0.5 rounded">actualCOP</code> de cada activo con un editor de texto o pídele a un asistente de IA que lo haga por ti a partir de tus extractos.</li>
-          <li>Importa el archivo editado desde la sección "Importar" de arriba.</li>
-          <li>Toda la app (dashboard, análisis, alertas, simulador) se recalcula automáticamente — no hay que tocar el código.</li>
+          <li>Para cada compra, venta, aporte, retiro, dividendo, staking, split, fusión o conversión: ve a <strong>Movimientos</strong> y regístralo ahí (formulario o el asistente "Analizar Nuevo Movimiento"). El portafolio, las alertas, el rebalanceo y el checklist se recalculan solos.</li>
+          <li>Para acciones y fondos colombianos (TRII, MPF) que no tienen precio en vivo: actualiza su valor de mercado en la tabla de <strong>Movimientos → Actualizar valores de mercado</strong> cada vez que revises tu extracto.</li>
+          <li>Usa <strong>Exportar/Importar JSON</strong> (arriba) solo para respaldos completos o ediciones masivas — el día a día no lo necesita.</li>
         </ol>
       </Card>
     </div>

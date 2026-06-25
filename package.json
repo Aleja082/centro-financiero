@@ -10,7 +10,8 @@
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
     "gen-example": "tsx scripts/gen-example.mts",
-    "smoke-test": "tsx scripts/smoke-test.mts"
+    "smoke-test": "tsx scripts/smoke-test.mts",
+    "test-engines": "tsx scripts/test-engines.mts"
   },
   "dependencies": {
     "@heroicons/react": "^2.1.5",
